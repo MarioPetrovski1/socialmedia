@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
+import Post from '../views/Post.vue'
 import { auth } from '../firebase'
 
 Vue.use(VueRouter)
@@ -26,7 +27,8 @@ const routes = [
     meta: {
       requiresAuth: true
     }
-  }
+  },
+  { path: '/post/:id', component: Post }
 ]
 
 const router = new VueRouter({

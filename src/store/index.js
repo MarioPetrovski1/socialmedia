@@ -10,8 +10,7 @@ fb.postsCollection.orderBy('createdOn', 'desc').onSnapshot(snapshot => {
 
   snapshot.forEach(doc => {
     let post = doc.data()
-    post.id = doc.id
-
+    post.id = doc.id;
     postsArray.push(post)
   })
 
@@ -21,7 +20,8 @@ fb.postsCollection.orderBy('createdOn', 'desc').onSnapshot(snapshot => {
 const store = new Vuex.Store({
   state: {
     userProfile: {},
-    posts: []
+    posts: [],
+    post:{},
   },
   mutations: {
     setUserProfile(state, val) {
@@ -29,7 +29,10 @@ const store = new Vuex.Store({
     },
     setPosts(state, val) {
       state.posts = val
-    }
+    },
+    setPost(state,payload){
+      state.post = payload;
+    },
   },
   actions: {
     async updateProfile({ dispatch }, user) {
@@ -90,7 +93,38 @@ const store = new Vuex.Store({
         userName: state.userProfile.name,
         comments: 0,
         likes: 0,
+        liked:false,
       })
+    },
+    async likePost(state, post){
+      let likes = post.likes.number;
+      let usersID1=[];
+      let likeObj={};
+     if(post.likes.usersID.includes(fb.auth.currentUser.uid)){
+       usersID1 = post.likes.usersID.filter(uid=> uid!==fb.auth.currentUser.uid);
+       likes--;
+      likeObj = {
+        number:likes,
+        usersID:usersID1
+ 
+      }
+      }else {
+        likes++;
+      likeObj = {
+         number:likes,
+         usersID:[...post.likes.usersID,fb.auth.currentUser.uid]
+  
+       }
+      }
+     console.log(post);
+    await fb.postsCollection.doc(post.id).update({likes:likeObj},{merge:true});
+    },
+    async readPost(state,postID){
+      await fb.postsCollection.doc(postID).get().then(doc=>{
+        console.log(doc.data());
+        state.commit("setPost",doc.data());
+      });
+
     }
   }
 })
